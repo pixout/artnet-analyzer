@@ -1,0 +1,9 @@
+github.com/boguslaw-wojcik/crc32a v1.0.0 h1:rZUcnG4WkADJBW8tmb5ZWFN30w/mHV8+/hzM66X2ptQ=
+github.com/boguslaw-wojcik/crc32a v1.0.0/go.mod h1:BnG1x2VM7pNqIjOAHQKMu4NZ0Rn7cCxr+BmuXIbNOhM=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/jsimonetti/go-artnet v0.0.0-20210922080205-810e8e5e57a2 h1:9qRbgauCkoRDWt1qVK4S85oMt1vTyFx2X5G2J4lKQWw=
+github.com/jsimonetti/go-artnet v0.0.0-20210922080205-810e8e5e57a2/go.mod h1:tF7t/+g43q0xWFefmRrYnkmLNFvULerIG/pkrkWeg5I=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
+github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
+golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
