@@ -5,12 +5,13 @@ import (
 	"net"
 	"runtime"
 	"time"
+        "flag"
 
 	"github.com/boguslaw-wojcik/crc32a"
 	"github.com/jsimonetti/go-artnet/packet"
 	"github.com/jsimonetti/go-artnet/packet/code"
-	//"github.com/pixout/artnet-analyzer"
-	"../.."
+
+	"./pkg/stat"
 )
 
 type message struct {
