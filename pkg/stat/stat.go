@@ -11,5 +11,5 @@ type Stat struct {
 }
 
 func NewStat() *Stat {
-	return &Stat{0, 0, 0}
+	return &Stat{Total_packets: 0}
 }
