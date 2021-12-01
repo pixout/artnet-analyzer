@@ -97,7 +97,7 @@ func list_duration() {
 }
 
 func init() {
-	flag.StringVar(&output, "output", "output.tsv", "Output file for result")
+	flag.StringVar(&output, "output", "output.tsv", "Output file for results")
 }
 
 func main() {
