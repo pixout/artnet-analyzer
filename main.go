@@ -34,8 +34,9 @@ func (mq messageQueue) enqueue(m message) {
 
 func list_duration() {
 
-	templ_format1 := "#\t%010d\tTimeCode\t%v\tOP\t%s\tDT\t%010v\tTM1\t%010v\tTM2\t%010v"
-	templ_format2 := "\tUni\t%03d\t%03d\t%03d\tSeq\t%03d\tCRC32\t%08x"
+        labels := "Frame Num #\tTime Code\tArtNet Operator\tDelay\tTotal time in ms\tTotal time in ns\tArtNet Universe\tArtNet Sequence\tCRC32A\n"
+	templ_format1 := "%010d\t%v\t%s\t%010v\t%010v\t%010v"
+	templ_format2 := "\tN%03d S%03d P%03d\t%03d\t%08x"
 	file, err := os.Create(output)
 	fmt.Printf("Worker started waiting for the data\n")
 
@@ -43,6 +44,8 @@ func list_duration() {
 		fmt.Printf("Error reading output file %s due to: %v ", output, err)
 		return
 	}
+
+        fmt.Fprintf(file, labels)
 
 	for m := range mq {
 
