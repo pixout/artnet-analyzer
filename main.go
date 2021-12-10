@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"time"
+        "sync"
 
 	"github.com/boguslaw-wojcik/crc32a"
 	"github.com/jsimonetti/go-artnet/packet"
@@ -27,6 +28,10 @@ type messageQueue chan message
 var mq messageQueue
 var stat *artanalyzer.Stat
 var output string
+var filterOnlyDMX bool
+var port int
+var sourceIP string
+var bufferPool sync.Pool
 
 func (mq messageQueue) enqueue(m message) {
 	mq <- m
@@ -34,8 +39,8 @@ func (mq messageQueue) enqueue(m message) {
 
 func list_duration() {
 
-        labels := "Frame Num #\tTime Code\tArtNet Operator\tDelay\tTotal time in ms\tTotal time in ns\tArtNet Universe\tArtNet Sequence\tCRC32A\n"
-	templ_format1 := "%010d\t%v\t%s\t%010v\t%010v\t%010v"
+        labels := "Frame Num #\tTime Code\tArtNet Operator\tDelay\tTotal time in ms\tTotal time in ns\tRemote Addr\tArtNet Universe\tArtNet Sequence\tCRC32A\n"
+	templ_format1 := "%010d\t%v\t%s\t%010v\t%010v\t%010v\t%s"
 	templ_format2 := "\tN%03d S%03d P%03d\t%03d\t%08x"
 	file, err := os.Create(output)
 	fmt.Printf("Worker started waiting for the data\n")
@@ -56,6 +61,11 @@ func list_duration() {
 			continue
 		}
 
+                if stat.Total_packets == 0 {
+                    m.delay = time.Duration(0) // for first packet delay always 0  
+                }
+
+                ignorePacket := false
 		if artp.GetOpCode() == code.OpOutput {
 
 			dmx := packet.ArtDMXPacket{}
@@ -67,20 +77,31 @@ func list_duration() {
 				continue
 			}
 
-			fmt.Fprintf(file, templ_format1+templ_format2+"\n",
+			fmt.Fprintf(file, templ_format1+templ_format2,
 				stat.Total_packets,
 				time.Now().UnixNano(),
 				"DMX",
 				m.delay,
 				stat.Total_ms,
 				stat.Total_ns,
+                                m.remote_ip,
 				dmx.Net,
 				dmx.SubUni,
 				dmx.Physical,
 				dmx.Sequence,
-				crc32a.Checksum(m.msg))
+				crc32a.Checksum(m.msg[:m.length]))
 
-		} else {
+                        fmt.Fprintf(file, "\t%03d\t",len(m.msg))
+
+                        for _,ch := range m.msg {
+		
+			    fmt.Fprintf(file, "%02X ", ch)
+		        }
+
+                        fmt.Fprintf(file, "\n")
+
+
+		} else if !filterOnlyDMX {
 
 			op := artp.GetOpCode()
 			fmt.Fprintf(file, templ_format1+"\n",
@@ -89,35 +110,54 @@ func list_duration() {
 				op.String(),
 				m.delay,
 				stat.Total_ms,
-				stat.Total_ns)
+				stat.Total_ns,
+                                m.remote_ip)
 
-		}
+		} else {
+                        ignorePacket = true
+                }
 
-		stat.Total_ms = stat.Total_ms + m.delay.Truncate(time.Millisecond)
-		stat.Total_ns = stat.Total_ns + m.delay
-		stat.Total_packets = stat.Total_packets + 1
+                if !ignorePacket { 
+
+		    stat.Total_ms = stat.Total_ms + m.delay.Truncate(time.Millisecond)
+		    stat.Total_ns = stat.Total_ns + m.delay
+                    stat.Total_packets = stat.Total_packets + 1
+                }
+
+          bufferPool.Put(m.msg)
 	}
 }
 
 func init() {
 	flag.StringVar(&output, "output", "output.tsv", "Output file for results")
+	flag.BoolVar(&filterOnlyDMX, "filter-only-artdmx", false, "Ignore all frames except ArtDMX")
+	flag.IntVar(&port, "port", 6454, "ArtNet Port")
+	flag.StringVar(&sourceIP, "listen-from-ip", "", "Listen from IP. (default from all)")
 }
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	addr := net.UDPAddr{
-		Port: 6454,
-		IP:   nil,
+		Port: port,
+		IP:   net.ParseIP(sourceIP),
+	}
+
+        bufferPool = sync.Pool{
+		New: func() interface{} { return make([]byte, 530) },
 	}
 
 	flag.Parse()
 
-	fmt.Printf("ArtNet Analyzer listening on the port: %v\n", addr.Port)
+	fmt.Printf("ArtNet frames Analyzer listening on the IP and port: %s:%v\n", sourceIP, addr.Port)
 	fmt.Printf("Output file: %s\n", output)
 
+        if filterOnlyDMX {
+	    fmt.Printf("Filtering ON. Ignore all packets except ArtDmx\n")
+        }
+
 	stat = artanalyzer.NewStat()
-	mq = make(messageQueue, 100)
+	mq = make(messageQueue, 1000000)
 	go list_duration()
 
 	go func() {
@@ -137,11 +177,13 @@ func main() {
 		return
 	}
 
+        ser.SetReadBuffer(10 * 1024)
+
 	defer ser.Close()
 	var prev time.Time
-	p := make([]byte, 2048)
 
 	for {
+        	p := bufferPool.Get().([]byte)
 		nbytes, remoteaddr, err := ser.ReadFromUDP(p)
 
 		if err != nil {
@@ -150,16 +192,8 @@ func main() {
 			continue
 		}
 
-		if prev.IsZero() {
-			prev = time.Now()
-
-			mq.enqueue(message{time.Duration(0), p, nbytes, remoteaddr.String()})
-		} else {
-
-			cur := time.Now()
-			mq.enqueue(message{cur.Sub(prev), p, nbytes, remoteaddr.String()})
-		}
-
+		cur := time.Now()
+		mq.enqueue(message{cur.Sub(prev), p, nbytes, remoteaddr.String()})
 		prev = time.Now()
 	}
 }
