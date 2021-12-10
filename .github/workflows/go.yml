@@ -24,7 +24,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
        name: artnet-analyzer
-       path: ./.../artnet-analyzer
+       path: ./artnet-analyzer
 
     - name: Test
       run: go test -v ./...
