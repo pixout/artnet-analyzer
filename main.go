@@ -62,7 +62,7 @@ func list_duration() {
 		}
 
 		if stat.Total_packets == 0 {
-			m.delay = time.Duration(0) // for first packet delay always 0
+			m.delay = time.Duration(0) // for first packet delay is always 0
 		}
 
 		ignorePacket := false
@@ -77,7 +77,7 @@ func list_duration() {
 				continue
 			}
 
-			fmt.Fprintf(file, templ_format1+templ_format2,
+			fmt.Fprintf(file, templ_format1+templ_format2+"\n",
 				stat.Total_packets,
 				time.Now().UnixNano(),
 				"DMX",
@@ -90,15 +90,6 @@ func list_duration() {
 				dmx.Physical,
 				dmx.Sequence,
 				crc32a.Checksum(m.msg[:m.length]))
-
-			fmt.Fprintf(file, "\t%03d\t", len(m.msg))
-
-			for _, ch := range m.msg {
-
-				fmt.Fprintf(file, "%02X ", ch)
-			}
-
-			fmt.Fprintf(file, "\n")
 
 		} else if !filterOnlyDMX {
 
