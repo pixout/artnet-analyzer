@@ -6,10 +6,11 @@ import (
 
 type Stat struct {
 	Total_packets int
-	Total_ns      time.Duration
-	Total_ms      time.Duration
+	ArtDmx_frames int
+	Total         time.Duration
+	FPU           time.Duration
 }
 
 func NewStat() *Stat {
-	return &Stat{Total_packets: 0}
+	return &Stat{Total_packets: 0, ArtDmx_frames: 0, Total: time.Duration(0), FPU: time.Duration(0) }
 }
