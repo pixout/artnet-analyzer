@@ -20,11 +20,16 @@ go build
 ## Usage
 
 ```
-artnet-analyzer 
+Usage of artnet-analyzer.exe: 
+  -filter-only-artdmx - Ignore all frames except ArtDMX     
+  -listen-from-ip IP - Listen from specified IP. (default from all)
+  -output FILENAME - Output file for results (default "output.tsv") 
+  -port NUMBER - ArtNet Port (default 6454)
+  -universes NUMBER - Frames Per Universes. How many universes are used?    
 ```
-or
+Example, Listen only ArtDMX frames from IP 2.0.0.111 and store in pixout.tsv file
 ```
-artnet-analyzer -output file.tsv
+artnet-analyzer -filter-only-artdmx -listen-from-ip 2.0.0.111 -output pixout.tsv
 ```
 
 ## Output TSV format
