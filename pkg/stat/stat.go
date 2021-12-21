@@ -12,5 +12,5 @@ type Stat struct {
 }
 
 func NewStat() *Stat {
-	return &Stat{Total_packets: 0, ArtDmx_frames: 0, Total: time.Duration(0), FPU: time.Duration(0) }
+	return &Stat{Total_packets: 0, ArtDmx_frames: 1, Total: time.Duration(0), FPU: time.Duration(0) }
 }
