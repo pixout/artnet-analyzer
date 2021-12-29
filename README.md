@@ -1,5 +1,5 @@
-# Art-Net frame Analyzer
-Utility for measuring ArtNet protocol frames.
+# Art-Net DMX traffic Analyzer
+Utility for measuring ArtNet protocol traffic frame by frame.
 
 What sort of data it outputs:
 * Time code in (ns)
